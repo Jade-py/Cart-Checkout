@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-forest: #2e6330;
+  --color-earth: #9a6035;
+  --color-cream: #faf8f4;
+  --color-sage: #8fad88;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-cream);
+  font-family: 'Jost', sans-serif;
+  color: #1a2e1b;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Progress stepper */
+.step-connector {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--color-forest), transparent);
+  margin: 0 8px;
+  opacity: 0.25;
+}
+
+.step-connector.active {
+  opacity: 1;
+  background: var(--color-forest);
+}
+
+/* Cart item card */
+.cart-card {
+  background: white;
+  border: 1px solid #e8ede8;
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.cart-card:hover {
+  box-shadow: 0 8px 24px rgba(46, 99, 48, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--color-forest);
+  color: white;
+  font-family: 'Jost', sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #254f27;
+  box-shadow: 0 6px 20px rgba(46, 99, 48, 0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Form inputs */
+.form-input {
+  border: 1.5px solid #d4e4d4;
+  border-radius: 8px;
+  font-family: 'Jost', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  background: white;
+}
+
+.form-input:focus {
+  border-color: var(--color-forest);
+  box-shadow: 0 0 0 3px rgba(46, 99, 48, 0.12);
+}
+
+.form-input.error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Payment card option */
+.payment-card {
+  border: 2px solid #e8ede8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.payment-card.selected {
+  border-color: var(--color-forest);
+  background: #f2f7f2;
+}
+
+/* Leaf decorations */
+.leaf-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.leaf-bg::before {
+  content: '';
+  position: absolute;
+  top: -60px;
+  right: -60px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(143, 173, 136, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Success checkmark animation */
+.success-circle {
+  animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.check-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: drawCheck 0.6s ease 0.3s forwards;
+}
+
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Staggered fade-up for list items */
+.stagger-item {
+  opacity: 0;
+  animation: fadeUp 0.45s ease forwards;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.05s; }
+.stagger-item:nth-child(2) { animation-delay: 0.12s; }
+.stagger-item:nth-child(3) { animation-delay: 0.19s; }
+.stagger-item:nth-child(4) { animation-delay: 0.26s; }
+.stagger-item:nth-child(5) { animation-delay: 0.33s; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0f0f0; }
+::-webkit-scrollbar-thumb { background: var(--color-sage); border-radius: 3px; }
