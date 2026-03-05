@@ -6,7 +6,7 @@ A polished, production-quality multi-step checkout experience built with **Next.
 
 ## Live Demo
 
-> Deploy to Vercel: `vercel --prod` (one command, zero config)
+> Deployed to Vercel: https://cart-checkout-snowy.vercel.app/
 
 ---
 
@@ -64,17 +64,6 @@ open http://localhost:3000
 
 ---
 
-## Deploying to Vercel
-
-```bash
-npm i -g vercel
-vercel --prod
-```
-
-No environment variables required for the mock data setup.
-
----
-
 ## Project Structure
 
 ```
@@ -93,6 +82,8 @@ ecoyaan-checkout/
 │   └── OrderSummary.tsx    # Reusable order totals sidebar
 ├── context/
 │   └── CheckoutContext.tsx # Global checkout state via Context API
+├── lib/
+│   └── mockData.ts         # Shared mock cart data (used by SSR page + API route)
 ├── types/
 │   └── index.ts            # Shared TypeScript interfaces
 ├── tailwind.config.ts
