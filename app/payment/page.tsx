@@ -4,13 +4,22 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCheckout } from "@/context/CheckoutContext";
 import StepProgress from "@/components/StepProgress";
+import BottomBar from "@/components/BottomBar";
 
 const PAYMENT_METHODS = [
-  { id: "card", label: "Credit / Debit Card", icon: "💳" },
-  { id: "upi", label: "UPI", icon: "📱" },
-  { id: "netbanking", label: "Net Banking", icon: "🏦" },
-  { id: "cod", label: "Cash on Delivery", icon: "💵" },
+  { id: "card", label: "Credit / Debit Card", icon: "💳", desc: "Visa, Mastercard, RuPay" },
+  { id: "upi",  label: "UPI",                 icon: "📱", desc: "GPay, PhonePe, Paytm" },
+  { id: "netbanking", label: "Net Banking",   icon: "🏦", desc: "All major banks" },
+  { id: "cod",  label: "Cash on Delivery",    icon: "💵", desc: "Pay when delivered" },
 ];
+
+function formatCard(val: string) {
+  return val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+}
+function formatExpiry(val: string) {
+  const d = val.replace(/\D/g, "").slice(0, 4);
+  return d.length >= 3 ? d.slice(0, 2) + "/" + d.slice(2) : d;
+}
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -20,42 +29,27 @@ export default function PaymentPage() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
 
-  // Guard: redirect if missing state
   useEffect(() => {
     if (!cartData || !shippingAddress) router.replace("/");
   }, [cartData, shippingAddress, router]);
 
   if (!cartData || !shippingAddress) return null;
 
-  const subtotal = cartData.cartItems.reduce(
-    (a, item) => a + item.product_price * item.quantity,
-    0
-  );
+  const subtotal = cartData.cartItems.reduce((a, i) => a + i.product_price * i.quantity, 0);
   const total = subtotal + cartData.shipping_fee - cartData.discount_applied;
-
-  function formatCardNumber(val: string) {
-    return val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
-  }
-
-  function formatExpiry(val: string) {
-    const digits = val.replace(/\D/g, "").slice(0, 4);
-    if (digits.length >= 3) return digits.slice(0, 2) + "/" + digits.slice(2);
-    return digits;
-  }
 
   async function handlePay() {
     setLoading(true);
-    // Simulate payment processing delay
     await new Promise((r) => setTimeout(r, 2000));
     setOrderPlaced(true);
     router.push("/success");
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8 pb-28">
       <StepProgress current={2} />
 
-      <div className="mb-6">
+      <div className="mb-6 stagger-item" style={{ animationDelay: "0.05s" }}>
         <h1
           className="text-3xl sm:text-4xl text-forest-900"
           style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
@@ -66,55 +60,11 @@ export default function PaymentPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-5">
-          {/* Order review */}
-          <div className="bg-white rounded-2xl border border-forest-100 p-5 shadow-sm">
-            <h2 className="font-semibold text-forest-800 mb-4 flex items-center gap-2">
-              <span>📦</span> Order Review
-            </h2>
-            <div className="space-y-3">
-              {cartData.cartItems.map((item) => (
-                <div key={item.product_id} className="flex gap-3 items-center">
-                  <img
-                    src={item.image}
-                    alt={item.product_name}
-                    className="w-12 h-12 rounded-lg object-cover border border-forest-100"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-forest-900 truncate">{item.product_name}</p>
-                    <p className="text-xs text-forest-400">Qty: {item.quantity}</p>
-                  </div>
-                  <p className="font-semibold text-forest-800 text-sm">
-                    ₹{(item.product_price * item.quantity).toLocaleString()}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Delivery address review */}
-          <div className="bg-white rounded-2xl border border-forest-100 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-semibold text-forest-800 flex items-center gap-2">
-                <span>📍</span> Delivering To
-              </h2>
-              <button
-                onClick={() => router.push("/shipping")}
-                className="text-xs text-forest-500 underline hover:text-forest-700"
-              >
-                Edit
-              </button>
-            </div>
-            <div className="bg-forest-50 rounded-xl p-4 text-sm text-forest-700 space-y-1">
-              <p className="font-semibold text-forest-900">{shippingAddress.fullName}</p>
-              <p>{shippingAddress.email} · {shippingAddress.phone}</p>
-              <p>{shippingAddress.city}, {shippingAddress.state} – {shippingAddress.pinCode}</p>
-            </div>
-          </div>
+        <div className="lg:col-span-2 space-y-4 stagger-item" style={{ animationDelay: "0.12s" }}>
 
           {/* Payment method */}
           <div className="bg-white rounded-2xl border border-forest-100 p-5 shadow-sm">
-            <h2 className="font-semibold text-forest-800 mb-4 flex items-center gap-2">
+            <h2 className="font-semibold text-forest-800 mb-4 text-sm uppercase tracking-wide flex items-center gap-2">
               <span>💳</span> Payment Method
             </h2>
             <div className="grid grid-cols-2 gap-2 mb-4">
@@ -122,25 +72,28 @@ export default function PaymentPage() {
                 <button
                   key={m.id}
                   onClick={() => setPaymentMethod(m.id)}
-                  className={`payment-card flex items-center gap-2 p-3 text-sm font-medium transition-all ${
-                    paymentMethod === m.id ? "selected text-forest-800" : "text-forest-500 hover:bg-forest-50"
+                  className={`flex flex-col items-start gap-0.5 p-3 rounded-xl border-2 text-left transition-all ${
+                    paymentMethod === m.id
+                      ? "border-forest-500 bg-forest-50"
+                      : "border-forest-100 hover:border-forest-200 hover:bg-forest-50/50"
                   }`}
                 >
-                  <span className="text-base">{m.icon}</span>
-                  <span className="text-xs sm:text-sm">{m.label}</span>
+                  <span className="text-xl">{m.icon}</span>
+                  <span className={`text-xs font-semibold ${paymentMethod === m.id ? "text-forest-800" : "text-forest-600"}`}>
+                    {m.label}
+                  </span>
+                  <span className="text-xs text-forest-400">{m.desc}</span>
                 </button>
               ))}
             </div>
 
-            {/* Card form (shown only when card is selected) */}
             {paymentMethod === "card" && (
-              <div className="space-y-3 pt-3 border-t border-forest-50">
+              <div className="space-y-3 pt-4 border-t border-forest-50">
                 <div>
                   <label className="text-xs font-medium text-forest-600 uppercase tracking-wide">Card Number</label>
                   <input
-                    type="text"
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                    type="text" value={cardNumber}
+                    onChange={(e) => setCardNumber(formatCard(e.target.value))}
                     placeholder="1234 5678 9012 3456"
                     className="form-input w-full mt-1 px-4 py-3 text-sm text-forest-900 placeholder-forest-300"
                   />
@@ -148,19 +101,14 @@ export default function PaymentPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-forest-600 uppercase tracking-wide">Expiry</label>
-                    <input
-                      type="text"
-                      value={expiry}
-                      onChange={(e) => setExpiry(formatExpiry(e.target.value))}
+                    <input type="text" value={expiry} onChange={(e) => setExpiry(formatExpiry(e.target.value))}
                       placeholder="MM/YY"
                       className="form-input w-full mt-1 px-4 py-3 text-sm text-forest-900 placeholder-forest-300"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-forest-600 uppercase tracking-wide">CVV</label>
-                    <input
-                      type="password"
-                      value={cvv}
+                    <input type="password" value={cvv}
                       onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 3))}
                       placeholder="•••"
                       className="form-input w-full mt-1 px-4 py-3 text-sm text-forest-900 placeholder-forest-300"
@@ -171,91 +119,109 @@ export default function PaymentPage() {
             )}
 
             {paymentMethod === "upi" && (
-              <div className="pt-3 border-t border-forest-50">
+              <div className="pt-4 border-t border-forest-50">
                 <label className="text-xs font-medium text-forest-600 uppercase tracking-wide">UPI ID</label>
-                <input
-                  type="text"
-                  placeholder="yourname@upi"
+                <input type="text" placeholder="yourname@upi"
                   className="form-input w-full mt-1 px-4 py-3 text-sm text-forest-900 placeholder-forest-300"
                 />
               </div>
             )}
           </div>
-
-          {/* Back button */}
-          <button
-            onClick={() => router.back()}
-            className="text-sm text-forest-500 hover:text-forest-700 flex items-center gap-1 transition-colors"
-          >
-            ← Back to Shipping
-          </button>
         </div>
 
-        {/* Summary sidebar */}
-        <div className="space-y-4">
+        {/* Pay summary sidebar */}
+        <div className="space-y-4 stagger-item" style={{ animationDelay: "0.2s" }}>
           <div className="bg-white rounded-2xl border border-forest-100 p-6 shadow-sm">
             <h3
               className="text-forest-800 mb-4 text-lg"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
             >
-              Amount Payable
+              Order Summary
             </h3>
-            <div className="space-y-2 text-sm">
+
+            {/* Delivering To */}
+            <div className="pb-4 mb-4 border-b border-forest-100">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-forest-500 uppercase tracking-widest flex items-center gap-1">
+                  <span>📍</span> Delivering To
+                </p>
+                <button
+                  onClick={() => router.push("/shipping")}
+                  className="text-xs text-forest-500 underline hover:text-forest-700 transition-colors"
+                >
+                  Change
+                </button>
+              </div>
+              <div className="bg-forest-50 rounded-xl p-3 space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-forest-900">{shippingAddress.fullName}</p>
+                  <span className="text-xs bg-forest-200 text-forest-700 px-2 py-0.5 rounded-full font-medium">
+                    {shippingAddress.label}
+                  </span>
+                </div>
+                <p className="text-xs text-forest-500">{shippingAddress.email} · {shippingAddress.phone}</p>
+                <p className="text-xs text-forest-500">{shippingAddress.city}, {shippingAddress.state} – {shippingAddress.pinCode}</p>
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="mb-4 space-y-3 pb-4 border-b border-forest-50">
+              {cartData.cartItems.map((item) => (
+                <div key={item.product_id} className="flex gap-3 items-start">
+                  <img
+                    src={item.image}
+                    alt={item.product_name}
+                    className="w-12 h-12 rounded-lg object-cover border border-forest-100"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-forest-800 font-medium leading-snug line-clamp-2">
+                      {item.product_name}
+                    </p>
+                    <p className="text-xs text-forest-400 mt-0.5">Qty: {item.quantity}</p>
+                  </div>
+                  <p className="text-sm font-semibold text-forest-700 whitespace-nowrap">
+                    ₹{(item.product_price * item.quantity).toLocaleString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Totals */}
+            <div className="space-y-2 text-sm pb-4 border-b border-forest-50">
               <div className="flex justify-between text-forest-600">
                 <span>Subtotal</span>
                 <span>₹{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-forest-600">
                 <span>Shipping</span>
-                <span>₹{cartData.shipping_fee}</span>
+                <span className="text-earth-600">₹{cartData.shipping_fee}</span>
               </div>
-              <div className="border-t border-forest-100 pt-3 mt-1 flex justify-between font-bold text-lg text-forest-900">
+              <div className="pt-3 border-t border-forest-100 flex justify-between font-semibold text-base text-forest-900">
                 <span>Total</span>
                 <span>₹{total.toLocaleString()}</span>
               </div>
             </div>
 
-            <button
-              onClick={handlePay}
-              disabled={loading}
-              className={`btn-primary w-full mt-5 py-4 rounded-xl text-sm font-medium tracking-widest uppercase flex items-center justify-center gap-2 ${
-                loading ? "opacity-75 cursor-wait" : ""
-              }`}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.3)" strokeWidth="3"/>
-                    <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round"/>
-                  </svg>
-                  Processing…
-                </>
-              ) : (
-                <>
-                  🔒 Pay Securely · ₹{total.toLocaleString()}
-                </>
-              )}
-            </button>
-
-            <div className="mt-4 flex items-center justify-center gap-3 text-forest-300">
-              <span className="text-xs">Visa</span>
-              <span>·</span>
-              <span className="text-xs">Mastercard</span>
-              <span>·</span>
-              <span className="text-xs">UPI</span>
-              <span>·</span>
-              <span className="text-xs">RuPay</span>
-            </div>
-          </div>
-
-          <div className="bg-forest-50 rounded-xl border border-forest-200 p-4 text-xs text-forest-600">
-            <p className="flex items-start gap-2">
-              <span>🌿</span>
-              <span>Your order is carbon-offset. We partner with certified tree-planting programs across India.</span>
+            <p className="mt-4 text-xs text-forest-400 flex items-center gap-1">
+              <span>🔒</span> Payments are 100% secure & encrypted
             </p>
           </div>
+
+          <div className="bg-forest-50 rounded-xl border border-forest-200 p-4 text-xs text-forest-600 flex items-start gap-2">
+            <span>🌿</span>
+            <span>Your order is carbon-offset. We partner with certified tree-planting programs across India.</span>
+          </div>
+
         </div>
       </div>
+
+      <BottomBar
+        onBack={() => router.push("/shipping")}
+        backLabel="Back"
+        nextLabel={`Pay Securely · ₹${total.toLocaleString()}`}
+        onNext={handlePay}
+        loading={loading}
+      />
     </div>
   );
 }

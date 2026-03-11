@@ -21,8 +21,7 @@ export interface ShippingAddress {
   state: string;
 }
 
-export interface CheckoutState {
-  cartData: CartData | null;
-  shippingAddress: ShippingAddress | null;
-  paymentMethod: string;
+export interface SavedAddress extends ShippingAddress {
+  id: string;
+  label: "Home" | "Work" | "Other";
 }
